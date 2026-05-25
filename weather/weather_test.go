@@ -11,7 +11,7 @@ import (
 func TestFetchParsesForecastAndAlerts(t *testing.T) {
 	mux := http.NewServeMux()
 	var base string
-	mux.HandleFunc("/points/1.23,-4.56", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/points/1.2300,-4.5600", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"properties":{"forecastHourly":%q}}`, base+"/hourly")
 	})
 	mux.HandleFunc("/hourly", func(w http.ResponseWriter, r *http.Request) {

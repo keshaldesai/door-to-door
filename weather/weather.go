@@ -23,7 +23,7 @@ type Client struct {
 func (c *Client) Fetch(ctx context.Context, lat, lon float64) model.Weather {
 	out := model.Weather{UpdatedAt: time.Now()}
 
-	pointsURL := fmt.Sprintf("%s/points/%g,%g", c.Base, lat, lon)
+	pointsURL := fmt.Sprintf("%s/points/%.4f,%.4f", c.Base, lat, lon)
 	var points struct {
 		Properties struct {
 			ForecastHourly string `json:"forecastHourly"`
@@ -56,7 +56,7 @@ func (c *Client) Fetch(ctx context.Context, lat, lon float64) model.Weather {
 		out.PrecipChance = p.ProbabilityOfPrecip.Value
 	}
 
-	alertsURL := fmt.Sprintf("%s/alerts/active?point=%s", c.Base, url.QueryEscape(fmt.Sprintf("%g,%g", lat, lon)))
+	alertsURL := fmt.Sprintf("%s/alerts/active?point=%s", c.Base, url.QueryEscape(fmt.Sprintf("%.4f,%.4f", lat, lon)))
 	var alerts struct {
 		Features []struct {
 			Properties struct {
