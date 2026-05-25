@@ -2,3 +2,5 @@ config.yaml
 *.local
 /commute
 /commute-helper
+.direnv/
+cache/
