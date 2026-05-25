@@ -1,0 +1,40 @@
+# Copy to config.yaml and edit. config.yaml is gitignored.
+# Secrets are NOT here; set GOOGLE_MAPS_KEY and DISCORD_WEBHOOK_URL in the env.
+
+home:
+  lat: 0.0      # your home latitude
+  lon: -0.0     # your home longitude
+
+stops:
+  # Metro-North GTFS stop_ids. After first run the static GTFS is cached at
+  # ./cache/mnr_gtfs.zip; unzip it and grep stops.txt to find the right ids.
+  # Work is "1" in the MNR feed.
+  home: "100"  # CONFIRM: Home vs Home stop_id from stops.txt
+  work: "1"
+
+subway:
+  routeId: "7"
+
+feeds:
+  # Keyless MTA feeds. VERIFY against current MTA developer docs; URLs have
+  # changed historically. These are the expected endpoints as of writing.
+  mnrStaticGtfs: "http://web.mta.info/developers/data/mnr/google_transit.zip"
+  mnrRealtime: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/mnr%2Fgtfs-mnr"
+  subwayAlerts: "https://api-endpoint.mta.info/Dataservice/camsys%2Fsubway-alerts"
+
+weather:
+  # NWS requires a descriptive User-Agent with contact info.
+  userAgent: "commute-helper (you@example.com)"
+
+trainsToShow: 3
+refreshSeconds: 45
+dashboardUrl: "http://localhost:8080"
+
+nudges:
+  morning: "07:00"
+  evening: "17:00"
+
+timezone: "America/New_York"
+
+server:
+  addr: ":8080"
