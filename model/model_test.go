@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -24,7 +25,7 @@ func TestSnapshotJSONRoundTrip(t *testing.T) {
 	if err := json.Unmarshal(b, &got); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	if got.Subway.Line != "7" || got.Drive.DurationMin != 9 {
-		t.Fatalf("round trip lost data: %+v", got)
+	if !reflect.DeepEqual(snap, got) {
+		t.Fatalf("round trip mismatch\ngot:  %+v\nwant: %+v", got, snap)
 	}
 }
