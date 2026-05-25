@@ -28,8 +28,8 @@ func (c *Client) Fetch(ctx context.Context, oLat, oLon, dLat, dLon float64) mode
 	}
 
 	q := url.Values{}
-	q.Set("origins", fmt.Sprintf("%g,%g", oLat, oLon))
-	q.Set("destinations", fmt.Sprintf("%g,%g", dLat, dLon))
+	q.Set("origins", fmt.Sprintf("%.6f,%.6f", oLat, oLon))
+	q.Set("destinations", fmt.Sprintf("%.6f,%.6f", dLat, dLon))
 	q.Set("departure_time", "now")
 	q.Set("key", c.Key)
 	u := c.Base + "?" + q.Encode()
