@@ -1,3 +1,7 @@
+// Renders the /api/status snapshot. Note: alert and forecast text is injected
+// via innerHTML. The only data sources are NWS and MTA (institutional APIs) and
+// this is a single-user self-hosted dashboard, so the injection risk is low. If
+// you expose this on a shared network, switch to textContent or sanitize first.
 const REFRESH_MS = 30000;
 
 function fmtTime(iso) {
