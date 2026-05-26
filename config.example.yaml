@@ -5,6 +5,10 @@ home:
   lat: 0.0      # your home latitude
   lon: -0.0     # your home longitude
 
+station:
+  lat: 1.2350      # your Metro-North station latitude (drive destination)
+  lon: -4.5680     # your Metro-North station longitude
+
 stops:
   # Metro-North GTFS stop_ids. After first run the static GTFS is cached at
   # ./cache/mnr_gtfs.zip; unzip it and grep stops.txt to find the right ids.

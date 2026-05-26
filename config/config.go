@@ -14,6 +14,10 @@ type Config struct {
 		Lat float64 `yaml:"lat"`
 		Lon float64 `yaml:"lon"`
 	} `yaml:"home"`
+	Station struct {
+		Lat float64 `yaml:"lat"`
+		Lon float64 `yaml:"lon"`
+	} `yaml:"station"`
 	Stops struct {
 		Home string `yaml:"home"`
 		Work       string `yaml:"work"`
