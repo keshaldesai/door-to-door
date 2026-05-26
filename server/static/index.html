@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Commute</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Commute</h1>
+    <span id="freshness" class="freshness">loading...</span>
+  </header>
+  <main>
+    <section id="weather" class="panel weather">Loading weather...</section>
+    <section class="journey">
+      <h2>Outbound (home to work)</h2>
+      <div id="out-drive" class="leg">Drive: ...</div>
+      <div id="out-train" class="leg">Metro-North Home to Work: ...</div>
+      <div id="out-subway" class="leg">subway: ...</div>
+    </section>
+    <section class="journey">
+      <h2>Inbound (work to home)</h2>
+      <div id="in-subway" class="leg">subway: ...</div>
+      <div id="in-train" class="leg">Metro-North Work to Home: ...</div>
+      <div id="in-drive" class="leg">Drive: ...</div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

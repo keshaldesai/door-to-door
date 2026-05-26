@@ -1,0 +1,28 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: system-ui, -apple-system, sans-serif;
+  background: #0f1115; color: #e7e9ee; line-height: 1.45;
+}
+header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 1rem 1.25rem; border-bottom: 1px solid #232733;
+}
+header h1 { margin: 0; font-size: 1.25rem; letter-spacing: .02em; }
+.freshness { color: #8b93a7; font-size: .8rem; }
+main { padding: 1rem 1.25rem; display: grid; gap: 1rem; max-width: 720px; }
+.panel, .journey {
+  background: #161a22; border: 1px solid #232733; border-radius: 12px; padding: 1rem;
+}
+.journey h2 { margin: 0 0 .75rem; font-size: .95rem; color: #aab2c5; text-transform: uppercase; letter-spacing: .05em; }
+.leg { padding: .5rem 0; border-top: 1px solid #232733; }
+.leg:first-of-type { border-top: none; }
+.trains { display: flex; flex-direction: column; gap: .25rem; margin-top: .35rem; }
+.train { display: flex; gap: .75rem; align-items: baseline; }
+.train .time { font-variant-numeric: tabular-nums; font-weight: 600; }
+.ok { color: #5fd68a; }
+.warn { color: #ffcc66; }
+.bad { color: #ff7a7a; }
+.muted { color: #8b93a7; }
+.track { color: #8b93a7; font-size: .85rem; }
+.err { color: #ff7a7a; font-size: .85rem; }
