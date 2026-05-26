@@ -84,3 +84,69 @@ func TestNextDeparturesLimitsToN(t *testing.T) {
 		t.Fatalf("limit not applied: %d", len(trains))
 	}
 }
+
+// TestOutOfOrderStopTimes verifies that stop_times.txt rows listed out of
+// stop_sequence order are still treated in sequence order.
+// The feed lists Work (stop_sequence 2) before FD (stop_sequence 1) in the CSV.
+func TestOutOfOrderStopTimes(t *testing.T) {
+	feed := buildZip(t, map[string]string{
+		"stops.txt": "stop_id,stop_name\nFD,Home\nWork,Work\n",
+		"calendar.txt": "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n" +
+			"WK,1,1,1,1,1,0,0,20260101,20261231\n",
+		"trips.txt": "route_id,service_id,trip_id\nNH,WK,T1\n",
+		// Work row (seq 2) is listed BEFORE FD row (seq 1) -- out of order
+		"stop_times.txt": "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n" +
+			"T1,08:20:00,08:20:00,Work,2\n" +
+			"T1,07:10:00,07:10:00,FD,1\n",
+	})
+	sched, err := Load(feed)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	loc, _ := time.LoadLocation("America/New_York")
+	now := time.Date(2026, 5, 25, 6, 0, 0, 0, loc)
+	trains := sched.NextDepartures("FD", "Work", now, 5)
+	if len(trains) != 1 {
+		t.Fatalf("got %d trains, want 1", len(trains))
+	}
+	if trains[0].TripID != "T1" {
+		t.Fatalf("TripID = %s, want T1", trains[0].TripID)
+	}
+	want := time.Date(2026, 5, 25, 7, 10, 0, 0, loc)
+	if !trains[0].Departure.Equal(want) {
+		t.Fatalf("Departure = %v, want %v", trains[0].Departure, want)
+	}
+}
+
+// TestLoopRouteDuplicateOrigin verifies that a trip serving the same stop twice
+// (loop route) uses the FIRST occurrence of origin and the first dest after it.
+// Trip T1: FD (seq1, 07:10) -> Work (seq2, 08:20) -> FD (seq3, 09:30)
+func TestLoopRouteDuplicateOrigin(t *testing.T) {
+	feed := buildZip(t, map[string]string{
+		"stops.txt": "stop_id,stop_name\nFD,Home\nWork,Work\n",
+		"calendar.txt": "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n" +
+			"WK,1,1,1,1,1,0,0,20260101,20261231\n",
+		"trips.txt": "route_id,service_id,trip_id\nNH,WK,T1\n",
+		"stop_times.txt": "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n" +
+			"T1,07:10:00,07:10:00,FD,1\n" +
+			"T1,08:20:00,08:20:00,Work,2\n" +
+			"T1,09:30:00,09:30:00,FD,3\n",
+	})
+	sched, err := Load(feed)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	loc, _ := time.LoadLocation("America/New_York")
+	now := time.Date(2026, 5, 25, 6, 0, 0, 0, loc)
+	trains := sched.NextDepartures("FD", "Work", now, 5)
+	if len(trains) != 1 {
+		t.Fatalf("got %d trains, want 1", len(trains))
+	}
+	if trains[0].TripID != "T1" {
+		t.Fatalf("TripID = %s, want T1", trains[0].TripID)
+	}
+	want := time.Date(2026, 5, 25, 7, 10, 0, 0, loc)
+	if !trains[0].Departure.Equal(want) {
+		t.Fatalf("Departure = %v, want %v (first FD departure)", trains[0].Departure, want)
+	}
+}

@@ -22,14 +22,16 @@ func (s *Schedule) NextDepartures(origin, dest string, now time.Time, n int) []m
 		}
 		oIdx, dIdx := -1, -1
 		for i, st := range stops {
-			if st.StopID == origin {
+			if oIdx == -1 && st.StopID == origin {
 				oIdx = i
+				continue
 			}
-			if st.StopID == dest {
+			if oIdx != -1 && st.StopID == dest {
 				dIdx = i
+				break
 			}
 		}
-		if oIdx == -1 || dIdx == -1 || oIdx >= dIdx {
+		if oIdx == -1 || dIdx == -1 {
 			continue // does not serve both stops in the right order
 		}
 		dep := midnight.Add(time.Duration(stops[oIdx].DepartSecs) * time.Second)

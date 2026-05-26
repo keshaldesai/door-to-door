@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strconv"
 )
 
@@ -83,6 +84,10 @@ func Load(zipBytes []byte) (*Schedule, error) {
 	}
 	if err := s.loadStopTimes(files["stop_times.txt"]); err != nil {
 		return nil, err
+	}
+	for tripID, stops := range s.stopTimes {
+		sort.Slice(stops, func(i, j int) bool { return stops[i].Sequence < stops[j].Sequence })
+		s.stopTimes[tripID] = stops
 	}
 	return s, nil
 }
