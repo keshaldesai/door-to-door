@@ -52,7 +52,7 @@ func Summary(snap model.Snapshot, which, dashboardURL string) string {
 		if t.Track != "" {
 			line += fmt.Sprintf(" (track %s)", t.Track)
 		}
-		b.WriteString(line + "\n")
+		fmt.Fprintln(&b, line)
 	} else if leg.Err != "" {
 		fmt.Fprintf(&b, "Train data unavailable: %s\n", leg.Err)
 	}
