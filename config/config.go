@@ -94,6 +94,9 @@ func Load(path string) (*Config, error) {
 	if cfg.Feeds.SubwayAlerts == "" {
 		missing = append(missing, "feeds.subwayAlerts")
 	}
+	if cfg.Weather.UserAgent == "" {
+		missing = append(missing, "weather.userAgent")
+	}
 	if len(missing) > 0 {
 		return nil, fmt.Errorf("missing required config fields: %v", missing)
 	}
