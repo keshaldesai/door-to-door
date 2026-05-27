@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -42,52 +43,58 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// Load the static MNR schedule once at startup.
+	// Load the static MNR schedule at startup; refresh it daily in the background.
 	zipBytes, err := gtfs.Download(ctx, httpClient, cfg.Feeds.MNRStaticGTFS)
 	if err != nil {
 		log.Fatalf("download MNR GTFS: %v", err)
 	}
-	sched, err := gtfs.Load(zipBytes)
+	initialSchedule, err := gtfs.Load(zipBytes)
 	if err != nil {
 		log.Fatalf("parse MNR GTFS: %v", err)
 	}
+	var schedule atomic.Pointer[gtfs.Schedule]
+	schedule.Store(initialSchedule)
+	go refreshScheduleDaily(ctx, httpClient, cfg.Feeds.MNRStaticGTFS, &schedule)
 
 	weatherClient := &weather.Client{HTTP: httpClient, Base: "https://api.weather.gov", UserAgent: cfg.Weather.UserAgent}
 	subwayClient := &subway.Client{HTTP: httpClient, URL: cfg.Feeds.SubwayAlerts, RouteID: cfg.Subway.RouteID}
 	driveClient := &drive.Client{HTTP: httpClient, Base: "https://maps.googleapis.com/maps/api/distancematrix/json", Key: cfg.GoogleMapsKey}
 	mnrClient := &mnr.Client{HTTP: httpClient, URL: cfg.Feeds.MNRRealtime}
 
-	trainLeg := func(origin, dest, originLabel, destLabel string) func(context.Context) model.TrainLeg {
-		return func(ctx context.Context) model.TrainLeg {
-			now := time.Now().In(loc)
+	build := func(ctx context.Context) model.Snapshot {
+		now := time.Now().In(loc)
+		sched := schedule.Load()
+		feed, feedErr := mnrClient.Fetch(ctx)
+
+		trainLeg := func(origin, dest, originLabel, destLabel string) model.TrainLeg {
 			leg := model.TrainLeg{Origin: originLabel, Dest: destLabel, Source: "scheduled", UpdatedAt: now}
 			leg.Trains = sched.NextDepartures(origin, dest, now, cfg.TrainsToShow)
-			feed, err := mnrClient.Fetch(ctx)
-			if err != nil {
-				leg.Err = err.Error()
+			if feedErr != nil {
+				leg.Err = feedErr.Error()
 				return leg
 			}
 			leg.Trains = mnr.Overlay(leg.Trains, feed, origin)
 			leg.Source = "realtime"
 			return leg
 		}
-	}
 
-	fetchers := dashboard.Fetchers{
-		Weather: func(ctx context.Context) model.Weather {
-			return weatherClient.Fetch(ctx, cfg.Home.Lat, cfg.Home.Lon)
-		},
-		Drive: func(ctx context.Context) model.DriveLeg {
-			// One estimate for the short home<->station leg, reused both ways.
-			return driveClient.Fetch(ctx, cfg.Home.Lat, cfg.Home.Lon, cfg.Station.Lat, cfg.Station.Lon)
-		},
-		Subway:   subwayClient.Fetch,
-		Outbound: trainLeg(cfg.Stops.Home, cfg.Stops.Work, "Home", "Work"),
-		Inbound:  trainLeg(cfg.Stops.Work, cfg.Stops.Home, "Work", "Home"),
-	}
-
-	build := func(ctx context.Context) model.Snapshot {
-		return dashboard.Build(ctx, fetchers, func() time.Time { return time.Now().In(loc) })
+		fetchers := dashboard.Fetchers{
+			Weather: func(ctx context.Context) model.Weather {
+				return weatherClient.Fetch(ctx, cfg.Home.Lat, cfg.Home.Lon)
+			},
+			Drive: func(ctx context.Context) model.DriveLeg {
+				// One estimate for the short home<->station leg, reused both ways.
+				return driveClient.Fetch(ctx, cfg.Home.Lat, cfg.Home.Lon, cfg.Station.Lat, cfg.Station.Lon)
+			},
+			Subway: subwayClient.Fetch,
+			Outbound: func(ctx context.Context) model.TrainLeg {
+				return trainLeg(cfg.Stops.Home, cfg.Stops.Work, "Home", "Work")
+			},
+			Inbound: func(ctx context.Context) model.TrainLeg {
+				return trainLeg(cfg.Stops.Work, cfg.Stops.Home, "Work", "Home")
+			},
+		}
+		return dashboard.Build(ctx, fetchers, func() time.Time { return now })
 	}
 
 	srv := server.New(build)
@@ -117,5 +124,31 @@ func main() {
 	log.Printf("commute dashboard on %s", cfg.Server.Addr)
 	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("server: %v", err)
+	}
+}
+
+// refreshScheduleDaily re-downloads and reparses the static GTFS once a day,
+// swapping it in atomically. Failures are logged and the previous schedule kept.
+func refreshScheduleDaily(ctx context.Context, client *http.Client, url string, dst *atomic.Pointer[gtfs.Schedule]) {
+	ticker := time.NewTicker(24 * time.Hour)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			zipBytes, err := gtfs.Download(ctx, client, url)
+			if err != nil {
+				log.Printf("gtfs daily refresh download: %v", err)
+				continue
+			}
+			s, err := gtfs.Load(zipBytes)
+			if err != nil {
+				log.Printf("gtfs daily refresh parse: %v", err)
+				continue
+			}
+			dst.Store(s)
+			log.Print("refreshed MNR static schedule")
+		}
 	}
 }
