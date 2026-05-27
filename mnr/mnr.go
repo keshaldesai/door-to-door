@@ -11,6 +11,7 @@ import (
 
 	"github.com/MobilityData/gtfs-realtime-bindings/golang/gtfs"
 	"github.com/keshaldee/commute/model"
+	"github.com/keshaldee/commute/mtarr"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -58,7 +59,11 @@ func Overlay(trains []model.Train, feed *gtfs.FeedMessage, originStopID string) 
 		if !ok {
 			continue
 		}
-		delay, found := originDelay(tu, originStopID)
+		stu := originStopTimeUpdate(tu, originStopID)
+		if stu == nil {
+			continue
+		}
+		delay, found := stopDelay(stu)
 		if !found {
 			continue
 		}
@@ -67,23 +72,38 @@ func Overlay(trains []model.Train, feed *gtfs.FeedMessage, originStopID string) 
 		trains[i].DelayMin = mins
 		trains[i].Departure = trains[i].Departure.Add(time.Duration(delay) * time.Second)
 		trains[i].Status = statusFor(mins)
+		trains[i].Track = trackFor(stu)
 	}
 	return trains
 }
 
-func originDelay(tu *gtfs.TripUpdate, stopID string) (int32, bool) {
+func originStopTimeUpdate(tu *gtfs.TripUpdate, stopID string) *gtfs.TripUpdate_StopTimeUpdate {
 	for _, stu := range tu.GetStopTimeUpdate() {
-		if stu.GetStopId() != stopID {
-			continue
-		}
-		if stu.Departure != nil {
-			return stu.Departure.GetDelay(), true
-		}
-		if stu.Arrival != nil {
-			return stu.Arrival.GetDelay(), true
+		if stu.GetStopId() == stopID {
+			return stu
 		}
 	}
+	return nil
+}
+
+func stopDelay(stu *gtfs.TripUpdate_StopTimeUpdate) (int32, bool) {
+	if stu.Departure != nil {
+		return stu.Departure.GetDelay(), true
+	}
+	if stu.Arrival != nil {
+		return stu.Arrival.GetDelay(), true
+	}
 	return 0, false
+}
+
+// trackFor reads the MTA railroad extension track from a stop-time update.
+// Returns "" when the extension is absent.
+func trackFor(stu *gtfs.TripUpdate_StopTimeUpdate) string {
+	ext := proto.GetExtension(stu, mtarr.E_MtaRailroadStopTimeUpdate)
+	if m, ok := ext.(*mtarr.MtaRailroadStopTimeUpdate); ok {
+		return m.GetTrack()
+	}
+	return ""
 }
 
 func statusFor(mins int) string {
