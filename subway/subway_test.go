@@ -56,6 +56,19 @@ func TestFetchReportsAlertForRoute7(t *testing.T) {
 	}
 }
 
+func TestFetchNoEffectAlertKeepsGoodService(t *testing.T) {
+	srv := serve(t, feedBytes(t, "7", "Planned work this weekend", gtfs.Alert_NO_EFFECT))
+	defer srv.Close()
+	c := &Client{HTTP: srv.Client(), URL: srv.URL, RouteID: "7"}
+	got := c.Fetch(context.Background())
+	if got.Status != "Good Service" {
+		t.Fatalf("status = %q, want Good Service", got.Status)
+	}
+	if len(got.Alerts) != 1 || got.Alerts[0] != "Planned work this weekend" {
+		t.Fatalf("alerts = %v", got.Alerts)
+	}
+}
+
 func TestFetchIgnoresOtherRoutes(t *testing.T) {
 	srv := serve(t, feedBytes(t, "L", "L train delays", gtfs.Alert_SIGNIFICANT_DELAYS))
 	defer srv.Close()

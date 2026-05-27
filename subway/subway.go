@@ -62,7 +62,7 @@ func (c *Client) Fetch(ctx context.Context) model.SubwayLeg {
 			worst = eff
 		}
 	}
-	if len(out.Alerts) > 0 {
+	if worst != gtfs.Alert_NO_EFFECT {
 		out.Status = statusFor(worst)
 	}
 	return out
