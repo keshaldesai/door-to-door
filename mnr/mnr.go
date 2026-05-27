@@ -63,6 +63,9 @@ func Overlay(trains []model.Train, feed *gtfs.FeedMessage, originStopID string) 
 		if stu == nil {
 			continue
 		}
+		// Track can be posted independent of a timing prediction, so set it
+		// whenever the stop-time update exists, not only when a delay is found.
+		trains[i].Track = trackFor(stu)
 		delay, found := stopDelay(stu)
 		if !found {
 			continue
@@ -72,7 +75,6 @@ func Overlay(trains []model.Train, feed *gtfs.FeedMessage, originStopID string) 
 		trains[i].DelayMin = mins
 		trains[i].Departure = trains[i].Departure.Add(time.Duration(delay) * time.Second)
 		trains[i].Status = statusFor(mins)
-		trains[i].Track = trackFor(stu)
 	}
 	return trains
 }
