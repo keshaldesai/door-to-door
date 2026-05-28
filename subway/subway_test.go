@@ -81,3 +81,73 @@ func TestFetchIgnoresOtherRoutes(t *testing.T) {
 		t.Fatalf("alerts = %v", got.Alerts)
 	}
 }
+
+// alertEntity builds an alert FeedEntity for routeID with optional stop_ids.
+func alertEntity(id, header string, effect gtfs.Alert_Effect, routeID string, stopIDs []string) *gtfs.FeedEntity {
+	r := routeID
+	sel := []*gtfs.EntitySelector{{RouteId: &r}}
+	for _, s := range stopIDs {
+		sid := s
+		sel = append(sel, &gtfs.EntitySelector{StopId: &sid})
+	}
+	e := effect
+	h := header
+	return &gtfs.FeedEntity{
+		Id: proto.String(id),
+		Alert: &gtfs.Alert{
+			Effect:         &e,
+			InformedEntity: sel,
+			HeaderText: &gtfs.TranslatedString{
+				Translation: []*gtfs.TranslatedString_Translation{{Text: &h, Language: proto.String("en")}},
+			},
+		},
+	}
+}
+
+func serveEntities(t *testing.T, ents ...*gtfs.FeedEntity) *httptest.Server {
+	t.Helper()
+	msg := &gtfs.FeedMessage{Header: &gtfs.FeedHeader{GtfsRealtimeVersion: proto.String("2.0")}, Entity: ents}
+	b, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return serve(t, b)
+}
+
+func TestFetchFiltersToRiderStops(t *testing.T) {
+	srv := serveEntities(t,
+		alertEntity("a1", "Queens-only work", gtfs.Alert_NO_EFFECT, "7", []string{"S5", "S6"}),
+		alertEntity("a2", "No 7 to Office Stop", gtfs.Alert_NO_EFFECT, "7", []string{"S7", "S4"}),
+	)
+	defer srv.Close()
+	c := &Client{HTTP: srv.Client(), URL: srv.URL, RouteID: "7", StopIDs: []string{"S1", "S2", "S3", "S4"}}
+	got := c.Fetch(context.Background())
+	if len(got.Alerts) != 1 || got.Alerts[0] != "No 7 to Office Stop" {
+		t.Fatalf("alerts = %v, want only the Office Stop alert", got.Alerts)
+	}
+}
+
+func TestFetchKeepsLineWideAlertWhenFiltering(t *testing.T) {
+	srv := serveEntities(t,
+		alertEntity("a1", "subways delayed systemwide", gtfs.Alert_SIGNIFICANT_DELAYS, "7", nil),
+	)
+	defer srv.Close()
+	c := &Client{HTTP: srv.Client(), URL: srv.URL, RouteID: "7", StopIDs: []string{"S4"}}
+	got := c.Fetch(context.Background())
+	if got.Status != "Delays" || len(got.Alerts) != 1 {
+		t.Fatalf("line-wide alert dropped: status=%q alerts=%v", got.Status, got.Alerts)
+	}
+}
+
+func TestFetchDedupesRepeatedAlertText(t *testing.T) {
+	srv := serveEntities(t,
+		alertEntity("a1", "Same notice", gtfs.Alert_NO_EFFECT, "7", []string{"S4"}),
+		alertEntity("a2", "Same notice", gtfs.Alert_NO_EFFECT, "7", []string{"S3"}),
+	)
+	defer srv.Close()
+	c := &Client{HTTP: srv.Client(), URL: srv.URL, RouteID: "7", StopIDs: []string{"S1", "S2", "S3", "S4"}}
+	got := c.Fetch(context.Background())
+	if len(got.Alerts) != 1 {
+		t.Fatalf("expected dedupe to 1 alert, got %v", got.Alerts)
+	}
+}

@@ -23,7 +23,8 @@ type Config struct {
 		Work       string `yaml:"work"`
 	} `yaml:"stops"`
 	Subway struct {
-		RouteID string `yaml:"routeId"`
+		RouteID string   `yaml:"routeId"`
+		StopIDs []string `yaml:"stopIds"`
 	} `yaml:"subway"`
 	Feeds struct {
 		MNRStaticGTFS string `yaml:"mnrStaticGtfs"`

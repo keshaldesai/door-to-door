@@ -17,6 +17,10 @@ stops:
 
 subway:
   routeId: "7"
+  # Only show subway alerts touching the stops you ride (plus line-wide ones).
+  # Leave empty to see every subway alert. Subway GTFS stop_ids:
+  # 723 Work, 724 5 Av, 725 Times Sq, 726 34 St-Office Stop.
+  stopIds: ["S1", "S2", "S3", "S4"]
 
 feeds:
   # Keyless MTA feeds. VERIFY against current MTA developer docs; URLs have

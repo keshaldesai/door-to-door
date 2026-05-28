@@ -18,6 +18,10 @@ type Client struct {
 	HTTP    *http.Client
 	URL     string
 	RouteID string
+	// StopIDs limits alerts to those touching the rider's own stops. When set,
+	// stop-specific alerts must reference one of these stops; line-wide alerts
+	// are always kept. When empty, every alert for the route is kept.
+	StopIDs []string
 }
 
 func (c *Client) Fetch(ctx context.Context) model.SubwayLeg {
@@ -49,14 +53,21 @@ func (c *Client) Fetch(ctx context.Context) model.SubwayLeg {
 		return out
 	}
 
+	stopSet := make(map[string]bool, len(c.StopIDs))
+	for _, s := range c.StopIDs {
+		stopSet[s] = true
+	}
+
 	worst := gtfs.Alert_NO_EFFECT
+	seen := map[string]bool{}
 	for _, e := range feed.GetEntity() {
 		alert := e.GetAlert()
-		if alert == nil || !affectsRoute(alert, c.RouteID) {
+		if alert == nil || !relevant(alert, c.RouteID, stopSet) {
 			continue
 		}
-		if text := headerText(alert); text != "" {
+		if text := headerText(alert); text != "" && !seen[text] {
 			out.Alerts = append(out.Alerts, text)
+			seen[text] = true
 		}
 		if eff := alert.GetEffect(); severity(eff) > severity(worst) {
 			worst = eff
@@ -68,9 +79,28 @@ func (c *Client) Fetch(ctx context.Context) model.SubwayLeg {
 	return out
 }
 
-func affectsRoute(a *gtfs.Alert, routeID string) bool {
+// relevant reports whether an alert affects routeID in a way the rider sees.
+// When stopSet is non-empty, a stop-specific alert must touch one of those
+// stops; line-wide alerts (no stop) and all alerts when stopSet is empty pass.
+func relevant(a *gtfs.Alert, routeID string, stopSet map[string]bool) bool {
+	routeMatch := false
+	var stops []string
 	for _, e := range a.GetInformedEntity() {
 		if e.GetRouteId() == routeID {
+			routeMatch = true
+		}
+		if s := e.GetStopId(); s != "" {
+			stops = append(stops, s)
+		}
+	}
+	if !routeMatch {
+		return false
+	}
+	if len(stopSet) == 0 || len(stops) == 0 {
+		return true
+	}
+	for _, s := range stops {
+		if stopSet[s] {
 			return true
 		}
 	}

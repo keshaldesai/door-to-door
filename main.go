@@ -57,7 +57,7 @@ func main() {
 	go refreshScheduleDaily(ctx, httpClient, cfg.Feeds.MNRStaticGTFS, &schedule)
 
 	weatherClient := &weather.Client{HTTP: httpClient, Base: "https://api.weather.gov", UserAgent: cfg.Weather.UserAgent}
-	subwayClient := &subway.Client{HTTP: httpClient, URL: cfg.Feeds.SubwayAlerts, RouteID: cfg.Subway.RouteID}
+	subwayClient := &subway.Client{HTTP: httpClient, URL: cfg.Feeds.SubwayAlerts, RouteID: cfg.Subway.RouteID, StopIDs: cfg.Subway.StopIDs}
 	driveClient := &drive.Client{HTTP: httpClient, Base: "https://maps.googleapis.com/maps/api/distancematrix/json", Key: cfg.GoogleMapsKey}
 	mnrClient := &mnr.Client{HTTP: httpClient, URL: cfg.Feeds.MNRRealtime}
 
