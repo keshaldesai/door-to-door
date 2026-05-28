@@ -71,8 +71,12 @@ func Load(zipBytes []byte) (*Schedule, error) {
 		tripService:  map[string]string{},
 		stopTimes:    map[string][]StopTime{},
 	}
-	if err := s.loadCalendar(files["calendar.txt"]); err != nil {
-		return nil, err
+	// calendar.txt is optional: some feeds (including Metro-North) define all
+	// service through calendar_dates.txt instead of a weekly pattern.
+	if f := files["calendar.txt"]; f != nil {
+		if err := s.loadCalendar(f); err != nil {
+			return nil, err
+		}
 	}
 	if f := files["calendar_dates.txt"]; f != nil {
 		if err := s.loadCalendarDates(f); err != nil {

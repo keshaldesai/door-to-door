@@ -150,3 +150,34 @@ func TestLoopRouteDuplicateOrigin(t *testing.T) {
 		t.Fatalf("Departure = %v, want %v (first FD departure)", trains[0].Departure, want)
 	}
 }
+
+// TestCalendarDatesOnlyFeed verifies a feed with no calendar.txt (like the real
+// Metro-North feed) where service is defined entirely by calendar_dates.txt:
+// each running service-date is an explicit exception_type 1 entry.
+func TestCalendarDatesOnlyFeed(t *testing.T) {
+	feed := buildZip(t, map[string]string{
+		"stops.txt": "stop_id,stop_name\nFD,Home\nWork,Work\n",
+		// No calendar.txt. Service S1 runs only on 2026-05-25 (type 1 = added).
+		"calendar_dates.txt": "service_id,date,exception_type\nS1,20260525,1\n",
+		"trips.txt":          "route_id,service_id,trip_id\nNH,S1,T1\n",
+		"stop_times.txt": "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n" +
+			"T1,07:10:00,07:10:00,FD,1\nT1,08:20:00,08:20:00,Work,2\n",
+	})
+	sched, err := Load(feed)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	loc, _ := time.LoadLocation("America/New_York")
+
+	// On the listed date the train runs.
+	now := time.Date(2026, 5, 25, 6, 0, 0, 0, loc)
+	if trains := sched.NextDepartures("FD", "Work", now, 5); len(trains) != 1 || trains[0].TripID != "T1" {
+		t.Fatalf("on listed date got %v, want one T1", trains)
+	}
+
+	// On an unlisted date the service does not run.
+	other := time.Date(2026, 5, 26, 6, 0, 0, 0, loc)
+	if trains := sched.NextDepartures("FD", "Work", other, 5); len(trains) != 0 {
+		t.Fatalf("on unlisted date got %v, want none", trains)
+	}
+}
