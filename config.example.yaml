@@ -6,14 +6,13 @@ home:
   lon: -0.0     # your home longitude
 
 station:
-  lat: 1.2350      # your Metro-North station latitude (drive destination)
-  lon: -4.5680     # your Metro-North station longitude
+  lat: 0.0    # your Metro-North station latitude (drive destination)
+  lon: -0.0   # your Metro-North station longitude (Home station)
 
 stops:
-  # Metro-North GTFS stop_ids. After first run the static GTFS is cached at
-  # ./cache/mnr_gtfs.zip; unzip it and grep stops.txt to find the right ids.
-  # Work is "1" in the MNR feed.
-  home: "100"  # CONFIRM: Home vs Home stop_id from stops.txt
+  # Metro-North GTFS stop_ids (from the feed's stops.txt). Download the static
+  # GTFS zip and grep stops.txt to confirm your station. Work is "1".
+  home: "100"  # Home = 138; Home-Branch = 188
   work: "1"
 
 subway:
@@ -24,7 +23,7 @@ feeds:
   # changed historically. These are the expected endpoints as of writing.
   mnrStaticGtfs: "http://web.mta.info/developers/data/mnr/google_transit.zip"
   mnrRealtime: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/mnr%2Fgtfs-mnr"
-  subwayAlerts: "https://api-endpoint.mta.info/Dataservice/camsys%2Fsubway-alerts"
+  subwayAlerts: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
 
 weather:
   # NWS requires a descriptive User-Agent with contact info.
