@@ -18,12 +18,19 @@ type Train struct {
 
 // TrainLeg is the next few trains between two stops in one direction.
 type TrainLeg struct {
-	Origin    string    `json:"origin"`
-	Dest      string    `json:"dest"`
-	Trains    []Train   `json:"trains"`
-	Source    string    `json:"source"` // "realtime" | "scheduled"
-	Err       string    `json:"err,omitempty"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Origin string  `json:"origin"`
+	Dest   string  `json:"dest"`
+	Trains []Train `json:"trains"`
+	Source string  `json:"source"` // "realtime" | "scheduled"
+	// LeaveOffsetMin is how many minutes before the train you should leave for
+	// it. Zero means no leave-by hint is shown.
+	LeaveOffsetMin int `json:"leaveOffsetMin,omitempty"`
+	// ExpectedTrack is the platform the user expects to board on at this leg's
+	// origin. Empty means no comparison; non-empty plus a posted track that
+	// differs is a warning.
+	ExpectedTrack string    `json:"expectedTrack,omitempty"`
+	Err           string    `json:"err,omitempty"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 // SubwayLeg is the 7-line service status plus any active alert text.

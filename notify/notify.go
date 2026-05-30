@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/keshaldee/commute/model"
 )
@@ -48,9 +49,23 @@ func Summary(snap model.Snapshot, which, dashboardURL string) string {
 
 	if len(leg.Trains) > 0 {
 		t := leg.Trains[0]
-		line := fmt.Sprintf("Next train %s - %s", t.Departure.Format("3:04"), t.Status)
+		line := fmt.Sprintf("Next train %s - %s", t.Departure.Format("3:04 PM"), t.Status)
+		// Collect the parenthetical extras: leave time, then track. Each is
+		// omitted when not applicable so the nudge stays short.
+		var extras []string
+		if leg.LeaveOffsetMin > 0 {
+			leaveAt := t.Departure.Add(-time.Duration(leg.LeaveOffsetMin) * time.Minute)
+			extras = append(extras, "leave "+leaveAt.Format("3:04 PM"))
+		}
 		if t.Track != "" {
-			line += fmt.Sprintf(" (track %s)", t.Track)
+			if leg.ExpectedTrack != "" && t.Track != leg.ExpectedTrack {
+				extras = append(extras, fmt.Sprintf("track %s - expected %s", t.Track, leg.ExpectedTrack))
+			} else {
+				extras = append(extras, "track "+t.Track)
+			}
+		}
+		if len(extras) > 0 {
+			line += " (" + strings.Join(extras, ", ") + ")"
 		}
 		fmt.Fprintln(&b, line)
 	} else if leg.Err != "" {

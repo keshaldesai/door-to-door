@@ -45,3 +45,15 @@ timezone: "America/New_York"
 
 server:
   addr: ":8080"
+
+# Minutes before the MNR departure to leave for the train, per direction.
+# Both default to 0 (no leave-by hint shown).
+leaveBeforeTrainMinutes:
+  outbound: 20    # home -> work: leave home this many minutes before MNR.
+  inbound: 30     # work -> home: leave work this many minutes before MNR.
+
+# Expected boarding track per stop key (matches keys under `stops`). When the
+# realtime feed posts a different track, the dashboard shows a warning. Empty
+# or missing entries disable the comparison.
+expectedTracks:
+  home: "3"

@@ -30,6 +30,24 @@ func TestBuildAssemblesAllLegsConcurrently(t *testing.T) {
 	}
 }
 
+func TestBuildPreservesLegLeaveOffsetAndExpectedTrack(t *testing.T) {
+	f := Fetchers{
+		Outbound: func(ctx context.Context) model.TrainLeg {
+			return model.TrainLeg{LeaveOffsetMin: 20, ExpectedTrack: "3"}
+		},
+		Inbound: func(ctx context.Context) model.TrainLeg {
+			return model.TrainLeg{LeaveOffsetMin: 30}
+		},
+	}
+	snap := Build(context.Background(), f, time.Now)
+	if snap.Outbound.LeaveOffsetMin != 20 || snap.Outbound.ExpectedTrack != "3" {
+		t.Fatalf("outbound = %+v", snap.Outbound)
+	}
+	if snap.Inbound.LeaveOffsetMin != 30 || snap.Inbound.ExpectedTrack != "" {
+		t.Fatalf("inbound = %+v", snap.Inbound)
+	}
+}
+
 func TestBuildToleratesNilFetchers(t *testing.T) {
 	snap := Build(context.Background(), Fetchers{}, time.Now)
 	if snap.Subway.Err == "" {

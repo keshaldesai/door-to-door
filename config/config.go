@@ -45,6 +45,15 @@ type Config struct {
 	Server   struct {
 		Addr string `yaml:"addr"`
 	} `yaml:"server"`
+	// LeaveBeforeTrainMinutes is how many minutes before each MNR departure to
+	// leave for the train, per direction. Zero hides the leave-by hint.
+	LeaveBeforeTrainMinutes struct {
+		Outbound int `yaml:"outbound"`
+		Inbound  int `yaml:"inbound"`
+	} `yaml:"leaveBeforeTrainMinutes"`
+	// ExpectedTracks maps a `stops` key (e.g. the home-stop key) to the track
+	// the user expects to board on. Empty means no comparison.
+	ExpectedTracks map[string]string `yaml:"expectedTracks"`
 
 	// Secrets, loaded from the environment, never from the YAML file.
 	GoogleMapsKey     string `yaml:"-"`

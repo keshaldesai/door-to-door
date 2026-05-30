@@ -14,8 +14,8 @@ func TestSnapshotJSONRoundTrip(t *testing.T) {
 		Weather:     Weather{Summary: "Rain", TempF: 55, PrecipChance: 80},
 		Drive:       DriveLeg{DurationMin: 9},
 		Subway:      SubwayLeg{Line: "7", Status: "Good Service"},
-		Outbound:    TrainLeg{Origin: "Home", Dest: "Work", Source: "realtime"},
-		Inbound:     TrainLeg{Origin: "Work", Dest: "Home", Source: "scheduled"},
+		Outbound:    TrainLeg{Origin: "Home", Dest: "Work", Source: "realtime", LeaveOffsetMin: 20, ExpectedTrack: "3"},
+		Inbound:     TrainLeg{Origin: "Work", Dest: "Home", Source: "scheduled", LeaveOffsetMin: 30},
 	}
 	b, err := json.Marshal(snap)
 	if err != nil {

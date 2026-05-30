@@ -66,8 +66,14 @@ func main() {
 		sched := schedule.Load()
 		feed, feedErr := mnrClient.Fetch(ctx)
 
-		trainLeg := func(origin, dest, originLabel, destLabel string) model.TrainLeg {
-			leg := model.TrainLeg{Origin: originLabel, Dest: destLabel, Source: "scheduled", UpdatedAt: now}
+		// trainLeg builds one direction. leaveOffsetMin and expectedTrack are
+		// per-direction config; expectedTrack is for the boarding (origin) stop.
+		trainLeg := func(origin, dest, originLabel, destLabel string, leaveOffsetMin int, expectedTrack string) model.TrainLeg {
+			leg := model.TrainLeg{
+				Origin: originLabel, Dest: destLabel, Source: "scheduled", UpdatedAt: now,
+				LeaveOffsetMin: leaveOffsetMin,
+				ExpectedTrack:  expectedTrack,
+			}
 			leg.Trains = sched.NextDepartures(origin, dest, now, cfg.TrainsToShow)
 			if feedErr != nil {
 				leg.Err = feedErr.Error()
@@ -88,10 +94,12 @@ func main() {
 			},
 			Subway: subwayClient.Fetch,
 			Outbound: func(ctx context.Context) model.TrainLeg {
-				return trainLeg(cfg.Stops.Home, cfg.Stops.Work, "Home", "Work")
+				return trainLeg(cfg.Stops.Home, cfg.Stops.Work, "Home", "Work",
+					cfg.LeaveBeforeTrainMinutes.Outbound, cfg.ExpectedTracks["home"])
 			},
 			Inbound: func(ctx context.Context) model.TrainLeg {
-				return trainLeg(cfg.Stops.Work, cfg.Stops.Home, "Work", "Home")
+				return trainLeg(cfg.Stops.Work, cfg.Stops.Home, "Work", "Home",
+					cfg.LeaveBeforeTrainMinutes.Inbound, cfg.ExpectedTracks["work"])
 			},
 		}
 		return dashboard.Build(ctx, fetchers, func() time.Time { return now })

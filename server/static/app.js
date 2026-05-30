@@ -30,10 +30,23 @@ function renderTrainLeg(id, leg) {
   const label = `Metro-North ${leg.origin} to ${leg.dest}`;
   if (leg.err) { el.innerHTML = `${label}: <span class="err">${leg.err}</span>`; return; }
   if (!leg.trains || !leg.trains.length) { el.innerHTML = `${label}: <span class="muted">no upcoming trains</span>`; return; }
+  const offsetMin = leg.leaveOffsetMin || 0;
+  const expected = leg.expectedTrack || "";
   const rows = leg.trains.map(t => {
-    const track = t.track ? `<span class="track">track ${t.track}</span>` : "";
+    const leaveAt = offsetMin > 0
+      ? new Date(new Date(t.departure).getTime() - offsetMin * 60_000)
+      : null;
+    const leave = leaveAt ? `<span class="leave">leave ${fmtTime(leaveAt.toISOString())}</span>` : "";
+    let track;
+    if (!t.track) {
+      track = `<span class="track muted">track TBD</span>`;
+    } else if (expected && t.track !== expected) {
+      track = `<span class="track bad">track ${t.track} (expected ${expected})</span>`;
+    } else {
+      track = `<span class="track">track ${t.track}</span>`;
+    }
     return `<div class="train"><span class="time">${fmtTime(t.departure)}</span>` +
-      `<span class="${statusClass(t.status)}">${t.status}</span>${track}</div>`;
+      `<span class="${statusClass(t.status)}">${t.status}</span>${leave}${track}</div>`;
   }).join("");
   el.innerHTML = `${label} <span class="muted">(${leg.source})</span><div class="trains">${rows}</div>`;
 }
