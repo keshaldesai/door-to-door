@@ -12,7 +12,7 @@ func TestBuildAssemblesAllLegsConcurrently(t *testing.T) {
 	f := Fetchers{
 		Weather:  func(ctx context.Context) model.Weather { return model.Weather{Summary: "Clear"} },
 		Drive:    func(ctx context.Context) model.DriveLeg { return model.DriveLeg{DurationMin: 9} },
-		Subway:   func(ctx context.Context) model.SubwayLeg { return model.SubwayLeg{Line: "7", Status: "Good Service"} },
+		Subway:   func(ctx context.Context) model.SubwayLeg { return model.SubwayLeg{Line: "X", Status: "Good Service"} },
 		Outbound: func(ctx context.Context) model.TrainLeg { return model.TrainLeg{Origin: "Home", Dest: "Work"} },
 		Inbound:  func(ctx context.Context) model.TrainLeg { return model.TrainLeg{Origin: "Work", Dest: "Home"} },
 	}

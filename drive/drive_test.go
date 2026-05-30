@@ -17,7 +17,7 @@ func TestFetchParsesDurationInTraffic(t *testing.T) {
 	}))
 	defer srv.Close()
 	c := &Client{HTTP: srv.Client(), Base: srv.URL, Key: "k"}
-	got := c.Fetch(context.Background(), 1.23, -4.56, 3.0, -4.0)
+	got := c.Fetch(context.Background(), 1.0, 2.0, 3.0, 4.0)
 	if got.Err != "" {
 		t.Fatalf("err: %s", got.Err)
 	}

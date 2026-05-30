@@ -40,12 +40,18 @@ func Post(ctx context.Context, client *http.Client, webhookURL, content string) 
 func Summary(snap model.Snapshot, which, dashboardURL string) string {
 	var b strings.Builder
 	leg := snap.Outbound
-	label := "Outbound (home -> Work)"
+	heading := "Outbound"
 	if which == "evening" {
 		leg = snap.Inbound
-		label = "Inbound (Work -> home)"
+		heading = "Inbound"
 	}
-	fmt.Fprintf(&b, "**Commute %s**\n", label)
+	// Build a "<heading> (<origin> -> <dest>)" header from the leg's own
+	// labels so no station name is hardcoded here.
+	if leg.Origin != "" && leg.Dest != "" {
+		fmt.Fprintf(&b, "**Commute %s (%s -> %s)**\n", heading, leg.Origin, leg.Dest)
+	} else {
+		fmt.Fprintf(&b, "**Commute %s**\n", heading)
+	}
 
 	if len(leg.Trains) > 0 {
 		t := leg.Trains[0]
@@ -72,7 +78,11 @@ func Summary(snap model.Snapshot, which, dashboardURL string) string {
 		fmt.Fprintf(&b, "Train data unavailable: %s\n", leg.Err)
 	}
 
-	fmt.Fprintf(&b, "subway: %s\n", snap.Subway.Status)
+	subwayLabel := "Subway"
+	if snap.Subway.Line != "" {
+		subwayLabel = snap.Subway.Line + " train"
+	}
+	fmt.Fprintf(&b, "%s: %s\n", subwayLabel, snap.Subway.Status)
 
 	if snap.Drive.Err == "" {
 		fmt.Fprintf(&b, "Drive: %d min\n", snap.Drive.DurationMin)

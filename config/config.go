@@ -9,6 +9,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// StopConfig is one MNR stop the rider boards or alights at.
+type StopConfig struct {
+	ID    string `yaml:"id"`
+	Label string `yaml:"label"`
+}
+
 type Config struct {
 	Home struct {
 		Lat float64 `yaml:"lat"`
@@ -18,9 +24,12 @@ type Config struct {
 		Lat float64 `yaml:"lat"`
 		Lon float64 `yaml:"lon"`
 	} `yaml:"station"`
+	// Stops are the two MNR stations the rider commutes between. id is the
+	// GTFS stop_id from the static feed; label is the display name (kept in
+	// config so personal station names never appear in source).
 	Stops struct {
-		Home string `yaml:"home"`
-		Work       string `yaml:"work"`
+		Home StopConfig `yaml:"home"`
+		Work StopConfig `yaml:"work"`
 	} `yaml:"stops"`
 	Subway struct {
 		RouteID string   `yaml:"routeId"`
@@ -89,11 +98,17 @@ func Load(path string) (*Config, error) {
 	}
 
 	var missing []string
-	if cfg.Stops.Home == "" {
-		missing = append(missing, "stops.home")
+	if cfg.Stops.Home.ID == "" {
+		missing = append(missing, "stops.home.id")
 	}
-	if cfg.Stops.Work == "" {
-		missing = append(missing, "stops.work")
+	if cfg.Stops.Work.ID == "" {
+		missing = append(missing, "stops.work.id")
+	}
+	if cfg.Stops.Home.Label == "" {
+		cfg.Stops.Home.Label = "Home"
+	}
+	if cfg.Stops.Work.Label == "" {
+		cfg.Stops.Work.Label = "Work"
 	}
 	if cfg.Feeds.MNRStaticGTFS == "" {
 		missing = append(missing, "feeds.mnrStaticGtfs")

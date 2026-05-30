@@ -38,13 +38,13 @@ func TestSummaryMorningMentionsOutboundAndLink(t *testing.T) {
 	snap := model.Snapshot{
 		Weather: model.Weather{Summary: "Rain", PrecipChance: 80},
 		Drive:   model.DriveLeg{DurationMin: 9},
-		Subway:  model.SubwayLeg{Line: "7", Status: "Delays"},
-		Outbound: model.TrainLeg{Trains: []model.Train{
+		Subway:  model.SubwayLeg{Line: "X", Status: "Delays"},
+		Outbound: model.TrainLeg{Origin: "Home", Dest: "Work", Trains: []model.Train{
 			{Departure: time.Date(2026, 5, 25, 7, 10, 0, 0, loc), Status: "Delayed 6m", Track: "2"},
 		}},
 	}
 	s := Summary(snap, "morning", "http://localhost:8080")
-	for _, want := range []string{"7:10 AM", "Delayed 6m", "Rain", "subway", "Delays", "http://localhost:8080"} {
+	for _, want := range []string{"7:10 AM", "Delayed 6m", "Rain", "X train", "Delays", "Home -> Work", "http://localhost:8080"} {
 		if !strings.Contains(s, want) {
 			t.Fatalf("summary missing %q:\n%s", want, s)
 		}

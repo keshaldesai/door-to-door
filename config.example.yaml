@@ -2,25 +2,31 @@
 # Secrets are NOT here; set GOOGLE_MAPS_KEY and DISCORD_WEBHOOK_URL in the env.
 
 home:
-  lat: 0.0      # your home latitude
-  lon: -0.0     # your home longitude
+  lat: 0.0          # your home latitude
+  lon: 0.0          # your home longitude
 
 station:
-  lat: 0.0    # your Metro-North station latitude (drive destination)
-  lon: -0.0   # your Metro-North station longitude (Home station)
+  lat: 0.0          # your MNR station latitude (the drive destination)
+  lon: 0.0          # your MNR station longitude
 
 stops:
-  # Metro-North GTFS stop_ids (from the feed's stops.txt). Download the static
-  # GTFS zip and grep stops.txt to confirm your station. Work is "1".
-  home: "100"  # Home = 138; Home-Branch = 188
-  work: "1"
+  # The two MNR stations you commute between. id is the GTFS stop_id from the
+  # static feed (download the zip and grep stops.txt). label is whatever you
+  # want shown on the dashboard for that stop.
+  home:
+    id: "0"
+    label: "Home"
+  work:
+    id: "1"
+    label: "Work"
 
 subway:
-  routeId: "7"
-  # Only show subway alerts touching the stops you ride (plus line-wide ones).
-  # Leave empty to see every subway alert. Subway GTFS stop_ids:
-  # 723 Work, 724 5 Av, 725 Times Sq, 726 34 St-Office Stop.
-  stopIds: ["S1", "S2", "S3", "S4"]
+  # Subway route id from the MTA realtime feeds. Pick the route you ride between
+  # the MNR station and your office.
+  routeId: ""
+  # Optional: only show alerts touching these subway stops (plus line-wide
+  # alerts). Leave empty to see every alert for `routeId`.
+  stopIds: []
 
 feeds:
   # Keyless MTA feeds. VERIFY against current MTA developer docs; URLs have
@@ -49,11 +55,10 @@ server:
 # Minutes before the MNR departure to leave for the train, per direction.
 # Both default to 0 (no leave-by hint shown).
 leaveBeforeTrainMinutes:
-  outbound: 20    # home -> work: leave home this many minutes before MNR.
-  inbound: 30     # work -> home: leave work this many minutes before MNR.
+  outbound: 0     # home -> work: leave home this many minutes before MNR.
+  inbound: 0      # work -> home: leave work this many minutes before MNR.
 
-# Expected boarding track per stop key (matches keys under `stops`). When the
-# realtime feed posts a different track, the dashboard shows a warning. Empty
-# or missing entries disable the comparison.
-expectedTracks:
-  home: "3"
+# Expected boarding track per stop key (`home` or `work`). When the realtime
+# feed posts a different track, the dashboard shows a warning. Empty or
+# missing entries disable the comparison.
+expectedTracks: {}

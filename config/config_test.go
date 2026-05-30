@@ -8,13 +8,17 @@ import (
 
 const sample = `
 home:
-  lat: 0.0
-  lon: -0.0
+  lat: 40.0
+  lon: -75.0
 stops:
-  home: "100"
-  work: "1"
+  home:
+    id: "100"
+    label: "Origin"
+  work:
+    id: "1"
+    label: "Dest"
 subway:
-  routeId: "7"
+  routeId: "X"
 feeds:
   mnrStaticGtfs: "http://example.com/mnr.zip"
   mnrRealtime: "http://example.com/mnr-rt"
@@ -50,8 +54,14 @@ func TestLoadReadsYAMLAndEnvSecrets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if cfg.Stops.Work != "1" || cfg.Subway.RouteID != "7" {
-		t.Fatalf("bad stops/route: %+v", cfg)
+	if cfg.Stops.Home.ID != "100" || cfg.Stops.Work.ID != "1" {
+		t.Fatalf("bad stop ids: %+v", cfg.Stops)
+	}
+	if cfg.Stops.Home.Label != "Origin" || cfg.Stops.Work.Label != "Dest" {
+		t.Fatalf("bad stop labels: %+v", cfg.Stops)
+	}
+	if cfg.Subway.RouteID != "X" {
+		t.Fatalf("bad route: %+v", cfg.Subway)
 	}
 	if cfg.GoogleMapsKey != "gkey" || cfg.DiscordWebhookURL != "https://discord/webhook" {
 		t.Fatalf("env secrets not loaded: %+v", cfg)
@@ -67,19 +77,53 @@ func TestLoadReadsYAMLAndEnvSecrets(t *testing.T) {
 	}
 }
 
+func TestLoadDefaultsStopLabelsWhenAbsent(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+	yaml := `
+home:
+  lat: 0
+  lon: 0
+stops:
+  home:
+    id: "100"
+  work:
+    id: "1"
+subway:
+  routeId: "X"
+feeds:
+  mnrStaticGtfs: "http://example.com/mnr.zip"
+  mnrRealtime: "http://example.com/mnr-rt"
+  subwayAlerts: "http://example.com/subway-alerts"
+weather:
+  userAgent: "commute-helper (me@example.com)"
+`
+	if err := os.WriteFile(path, []byte(yaml), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.Stops.Home.Label != "Home" || cfg.Stops.Work.Label != "Work" {
+		t.Fatalf("expected default labels Home/Work, got %+v", cfg.Stops)
+	}
+}
+
 func TestLoadAllowsLeaveOffsetAndExpectedTracksOmitted(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "config.yaml")
-	// Same as sample but without the two new optional sections.
 	yaml := `
 home:
-  lat: 0.0
-  lon: -0.0
+  lat: 0
+  lon: 0
 stops:
-  home: "100"
-  work: "1"
+  home:
+    id: "100"
+  work:
+    id: "1"
 subway:
-  routeId: "7"
+  routeId: "X"
 feeds:
   mnrStaticGtfs: "http://example.com/mnr.zip"
   mnrRealtime: "http://example.com/mnr-rt"

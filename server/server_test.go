@@ -14,7 +14,7 @@ import (
 
 func TestStatusReturnsCachedSnapshot(t *testing.T) {
 	s := New(func(ctx context.Context) model.Snapshot {
-		return model.Snapshot{Subway: model.SubwayLeg{Line: "7", Status: "Good Service"}}
+		return model.Snapshot{Subway: model.SubwayLeg{Line: "X", Status: "Good Service"}}
 	})
 	s.refresh(context.Background()) // populate cache once
 

@@ -53,8 +53,9 @@ function renderTrainLeg(id, leg) {
 
 function renderSubway(id, sub) {
   const el = document.getElementById(id);
-  if (sub.err) { el.innerHTML = `subway: <span class="err">${sub.err}</span>`; return; }
-  let html = `subway: <span class="${statusClass(sub.status)}">${sub.status}</span>`;
+  const label = sub.line ? `${sub.line} train` : "Subway";
+  if (sub.err) { el.innerHTML = `${label}: <span class="err">${sub.err}</span>`; return; }
+  let html = `${label}: <span class="${statusClass(sub.status)}">${sub.status}</span>`;
   if (sub.alerts && sub.alerts.length) {
     html += sub.alerts.map(a => `<div class="warn">${a}</div>`).join("");
   }

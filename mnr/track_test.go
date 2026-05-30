@@ -16,7 +16,7 @@ func TestOverlaySetsTrackFromExtension(t *testing.T) {
 	trains := []model.Train{{TripID: "T1", Departure: dep, Status: "On time"}}
 
 	tid := "T1"
-	stop := "Work"
+	stop := "B"
 	delay := int32(0)
 	stu := &gtfs.TripUpdate_StopTimeUpdate{
 		StopId:    &stop,
@@ -37,7 +37,7 @@ func TestOverlaySetsTrackFromExtension(t *testing.T) {
 		}},
 	}
 
-	got := Overlay(trains, feed, "Work")
+	got := Overlay(trains, feed, "B")
 	if got[0].Track != "19" {
 		t.Fatalf("expected track %q, got %q", "19", got[0].Track)
 	}
@@ -49,7 +49,7 @@ func TestOverlaySetsTrackWithoutTimingEvent(t *testing.T) {
 	trains := []model.Train{{TripID: "T1", Departure: dep, Status: "On time"}}
 
 	tid := "T1"
-	stop := "Work"
+	stop := "B"
 	stu := &gtfs.TripUpdate_StopTimeUpdate{StopId: &stop} // no Departure/Arrival
 	proto.SetExtension(stu, mtarr.E_MtaRailroadStopTimeUpdate, &mtarr.MtaRailroadStopTimeUpdate{
 		Track: proto.String("19"),
@@ -66,7 +66,7 @@ func TestOverlaySetsTrackWithoutTimingEvent(t *testing.T) {
 		}},
 	}
 
-	got := Overlay(trains, feed, "Work")
+	got := Overlay(trains, feed, "B")
 	if got[0].Track != "19" {
 		t.Fatalf("expected track %q without a timing event, got %q", "19", got[0].Track)
 	}
@@ -81,7 +81,7 @@ func TestOverlayLeavesTrackEmptyWhenAbsent(t *testing.T) {
 	trains := []model.Train{{TripID: "T1", Departure: dep, Status: "On time"}}
 
 	tid := "T1"
-	stop := "Work"
+	stop := "B"
 	delay := int32(0)
 	feed := &gtfs.FeedMessage{
 		Header: &gtfs.FeedHeader{GtfsRealtimeVersion: proto.String("2.0")},
@@ -97,7 +97,7 @@ func TestOverlayLeavesTrackEmptyWhenAbsent(t *testing.T) {
 		}},
 	}
 
-	got := Overlay(trains, feed, "Work")
+	got := Overlay(trains, feed, "B")
 	if got[0].Track != "" {
 		t.Fatalf("expected empty track, got %q", got[0].Track)
 	}

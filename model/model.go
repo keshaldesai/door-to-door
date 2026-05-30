@@ -1,7 +1,7 @@
 // Package model holds the shared data types assembled by the orchestrator and
 // serialized to the dashboard. Journeys are a frontend composition over these
-// shared legs: the subway status and the drive estimate are each computed once
-// and reused in both directions.
+// shared legs: the subway status and the drive estimate are each computed
+// once and reused in both directions.
 package model
 
 import "time"
@@ -10,7 +10,7 @@ import "time"
 type Train struct {
 	TripID    string    `json:"-"`
 	Departure time.Time `json:"departure"`
-	Status    string    `json:"status"`   // "On time", "Delayed 6m", "Early 2m"
+	Status    string    `json:"status"` // "On time", "Delayed 6m", "Early 2m"
 	DelayMin  int       `json:"delayMin"`
 	Track     string    `json:"track"`    // "" when not yet posted
 	Realtime  bool      `json:"realtime"` // true when realtime-adjusted
@@ -33,7 +33,7 @@ type TrainLeg struct {
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
-// SubwayLeg is the 7-line service status plus any active alert text.
+// SubwayLeg is the subway-line service status plus any active alert text.
 type SubwayLeg struct {
 	Line      string    `json:"line"`
 	Status    string    `json:"status"` // "Good Service" | "Delays" | "Service Change"
@@ -71,6 +71,6 @@ type Snapshot struct {
 	Weather     Weather   `json:"weather"`
 	Drive       DriveLeg  `json:"drive"`
 	Subway      SubwayLeg `json:"subway"`
-	Outbound    TrainLeg  `json:"outbound"` // Home -> Work
-	Inbound     TrainLeg  `json:"inbound"`  // Work -> Home
+	Outbound    TrainLeg  `json:"outbound"` // home -> work
+	Inbound     TrainLeg  `json:"inbound"`  // work -> home
 }

@@ -13,7 +13,7 @@ func TestSnapshotJSONRoundTrip(t *testing.T) {
 		GeneratedAt: now,
 		Weather:     Weather{Summary: "Rain", TempF: 55, PrecipChance: 80},
 		Drive:       DriveLeg{DurationMin: 9},
-		Subway:      SubwayLeg{Line: "7", Status: "Good Service"},
+		Subway:      SubwayLeg{Line: "X", Status: "Good Service"},
 		Outbound:    TrainLeg{Origin: "Home", Dest: "Work", Source: "realtime", LeaveOffsetMin: 20, ExpectedTrack: "3"},
 		Inbound:     TrainLeg{Origin: "Work", Dest: "Home", Source: "scheduled", LeaveOffsetMin: 30},
 	}

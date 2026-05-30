@@ -84,6 +84,7 @@ func main() {
 			return leg
 		}
 
+		home, work := cfg.Stops.Home, cfg.Stops.Work
 		fetchers := dashboard.Fetchers{
 			Weather: func(ctx context.Context) model.Weather {
 				return weatherClient.Fetch(ctx, cfg.Home.Lat, cfg.Home.Lon)
@@ -94,11 +95,11 @@ func main() {
 			},
 			Subway: subwayClient.Fetch,
 			Outbound: func(ctx context.Context) model.TrainLeg {
-				return trainLeg(cfg.Stops.Home, cfg.Stops.Work, "Home", "Work",
+				return trainLeg(home.ID, work.ID, home.Label, work.Label,
 					cfg.LeaveBeforeTrainMinutes.Outbound, cfg.ExpectedTracks["home"])
 			},
 			Inbound: func(ctx context.Context) model.TrainLeg {
-				return trainLeg(cfg.Stops.Work, cfg.Stops.Home, "Work", "Home",
+				return trainLeg(work.ID, home.ID, work.Label, home.Label,
 					cfg.LeaveBeforeTrainMinutes.Inbound, cfg.ExpectedTracks["work"])
 			},
 		}

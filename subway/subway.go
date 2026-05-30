@@ -1,5 +1,6 @@
-// Package subway derives subway service status and active alert text from the
-// MTA subway service-alerts GTFS-realtime feed (keyless).
+// Package subway derives the configured subway route's service status and
+// active alert text from the MTA subway service-alerts GTFS-realtime feed
+// (keyless).
 package subway
 
 import (
