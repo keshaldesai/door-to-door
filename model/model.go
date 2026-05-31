@@ -61,6 +61,8 @@ type Weather struct {
 	TempF        int            `json:"tempF"`
 	PrecipChance int            `json:"precipChance"`
 	Alerts       []WeatherAlert `json:"alerts"`
+	SunriseAt    time.Time      `json:"sunriseAt"`
+	SunsetAt     time.Time      `json:"sunsetAt"`
 	Err          string         `json:"err,omitempty"`
 	UpdatedAt    time.Time      `json:"updatedAt"`
 }

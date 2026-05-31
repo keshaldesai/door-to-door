@@ -9,6 +9,12 @@ function fmtTime(iso) {
   return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
+function fmtUntil(ms) {
+  const m = Math.max(0, Math.round(ms / 60000));
+  if (m < 60) return `${m}m`;
+  return `${Math.floor(m / 60)}h ${m % 60}m`;
+}
+
 function statusClass(status) {
   if (!status || status === "On time" || status === "Good Service") return "ok";
   if (status.startsWith("Delayed") || status === "Delays") return "bad";
@@ -21,6 +27,23 @@ function renderWeather(w) {
   let html = `<strong>${w.summary || "-"}</strong> &middot; ${w.tempF}&deg;F &middot; ${w.precipChance}% precip`;
   if (w.alerts && w.alerts.length) {
     html += w.alerts.map(a => `<div class="bad">&#9888; ${a.event}: ${a.headline}</div>`).join("");
+  }
+  // Go marshals zero time.Time as "0001-01-01T00:00:00Z"; that parses to a
+  // negative epoch, so the getTime() > 0 check is what actually gates display.
+  const rise = new Date(w.sunriseAt);
+  const set = new Date(w.sunsetAt);
+  if (rise.getTime() > 0 && set.getTime() > 0) {
+    const now = new Date();
+    const next = [rise, set].filter(d => d > now).sort((a, b) => a - b)[0];
+    let hint = "";
+    if (next) {
+      const ms = next - now;
+      if (ms <= 2 * 60 * 60 * 1000) {
+        const label = next === rise ? "sunrise" : "sunset";
+        hint = ` <span class="muted">(${label} in ${fmtUntil(ms)})</span>`;
+      }
+    }
+    html += `<div class="muted">Sunrise ${fmtTime(w.sunriseAt)}, sunset ${fmtTime(w.sunsetAt)}${hint}</div>`;
   }
   el.innerHTML = html;
 }

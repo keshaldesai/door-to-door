@@ -18,10 +18,19 @@ type Client struct {
 	HTTP      *http.Client
 	Base      string // e.g. https://api.weather.gov
 	UserAgent string
+	// Loc is the timezone used to anchor the civil date passed to Sun.
+	// When nil, time.Local is used (which equals the system TZ env).
+	Loc       *time.Location
 }
 
 func (c *Client) Fetch(ctx context.Context, lat, lon float64) model.Weather {
-	out := model.Weather{UpdatedAt: time.Now()}
+	now := time.Now()
+	anchor := now
+	if c.Loc != nil {
+		anchor = now.In(c.Loc)
+	}
+	rise, set := Sun(lat, lon, anchor)
+	out := model.Weather{UpdatedAt: now, SunriseAt: rise, SunsetAt: set}
 
 	pointsURL := fmt.Sprintf("%s/points/%.4f,%.4f", c.Base, lat, lon)
 	var points struct {
