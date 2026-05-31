@@ -42,6 +42,16 @@ type SubwayLeg struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+// SubwayCountdown is the next few arrivals at one subway stop in one
+// direction, sourced from the GTFS-realtime trip-updates feed.
+type SubwayCountdown struct {
+	StopID    string      `json:"stopId"`
+	Direction uint32      `json:"direction"`
+	Arrivals  []time.Time `json:"arrivals"`
+	Err       string      `json:"err,omitempty"`
+	UpdatedAt time.Time   `json:"updatedAt"`
+}
+
 // DriveLeg is the traffic-aware drive time between home and the station.
 type DriveLeg struct {
 	DurationMin int       `json:"durationMin"`
@@ -69,10 +79,12 @@ type Weather struct {
 
 // Snapshot is the full dashboard state at a moment in time.
 type Snapshot struct {
-	GeneratedAt time.Time `json:"generatedAt"`
-	Weather     Weather   `json:"weather"`
-	Drive       DriveLeg  `json:"drive"`
-	Subway      SubwayLeg `json:"subway"`
-	Outbound    TrainLeg  `json:"outbound"` // home -> work
-	Inbound     TrainLeg  `json:"inbound"`  // work -> home
+	GeneratedAt    time.Time       `json:"generatedAt"`
+	Weather        Weather         `json:"weather"`
+	Drive          DriveLeg        `json:"drive"`
+	Subway         SubwayLeg       `json:"subway"`
+	Outbound       TrainLeg        `json:"outbound"` // home -> work
+	Inbound        TrainLeg        `json:"inbound"`  // work -> home
+	OutboundSubway SubwayCountdown `json:"outboundSubway"`
+	InboundSubway  SubwayCountdown `json:"inboundSubway"`
 }

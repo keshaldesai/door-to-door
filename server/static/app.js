@@ -74,7 +74,7 @@ function renderTrainLeg(id, leg) {
   el.innerHTML = `${label} <span class="muted">(${leg.source})</span><div class="trains">${rows}</div>`;
 }
 
-function renderSubway(id, sub) {
+function renderSubway(id, sub, countdown) {
   const el = document.getElementById(id);
   const label = sub.line ? `${sub.line} train` : "Subway";
   if (sub.err) { el.innerHTML = `${label}: <span class="err">${sub.err}</span>`; return; }
@@ -82,7 +82,29 @@ function renderSubway(id, sub) {
   if (sub.alerts && sub.alerts.length) {
     html += sub.alerts.map(a => `<div class="warn">${a}</div>`).join("");
   }
+  if (countdown) {
+    if (countdown.err) {
+      html += `<div class="err">Countdown: ${countdown.err}</div>`;
+    } else if (countdown.arrivals && countdown.arrivals.length) {
+      const now = Date.now();
+      const mins = countdown.arrivals
+        .map(a => Math.max(0, Math.round((new Date(a).getTime() - now) / 60000)))
+        .map(m => `${m} min`)
+        .join(", ");
+      const dir = directionLabel(countdown.stopId);
+      html += `<div class="muted">Next at ${countdown.stopId}${dir ? ` (${dir})` : ""}: ${mins}</div>`;
+    }
+  }
   el.innerHTML = html;
+}
+
+function directionLabel(stopId) {
+  if (typeof stopId === "string" && stopId.length > 0) {
+    const last = stopId[stopId.length - 1];
+    if (last === "N") return "uptown";
+    if (last === "S") return "downtown";
+  }
+  return "";
 }
 
 function renderDrive(id, drive) {
@@ -98,8 +120,8 @@ async function refresh() {
     renderWeather(snap.weather);
     renderDrive("out-drive", snap.drive);
     renderTrainLeg("out-train", snap.outbound);
-    renderSubway("out-subway", snap.subway);
-    renderSubway("in-subway", snap.subway);
+    renderSubway("out-subway", snap.subway, snap.outboundSubway);
+    renderSubway("in-subway", snap.subway, snap.inboundSubway);
     renderTrainLeg("in-train", snap.inbound);
     renderDrive("in-drive", snap.drive);
     document.getElementById("freshness").textContent =

@@ -13,18 +13,20 @@ import (
 // Fetchers holds one function per data source. A nil fetcher yields a leg with
 // an error set, so a missing source never breaks the whole snapshot.
 type Fetchers struct {
-	Weather  func(context.Context) model.Weather
-	Drive    func(context.Context) model.DriveLeg
-	Subway   func(context.Context) model.SubwayLeg
-	Outbound func(context.Context) model.TrainLeg
-	Inbound  func(context.Context) model.TrainLeg
+	Weather        func(context.Context) model.Weather
+	Drive          func(context.Context) model.DriveLeg
+	Subway         func(context.Context) model.SubwayLeg
+	Outbound       func(context.Context) model.TrainLeg
+	Inbound        func(context.Context) model.TrainLeg
+	OutboundSubway func(context.Context) model.SubwayCountdown
+	InboundSubway  func(context.Context) model.SubwayCountdown
 }
 
 // Build runs all fetchers concurrently and returns the assembled snapshot.
 func Build(ctx context.Context, f Fetchers, now func() time.Time) model.Snapshot {
 	var snap model.Snapshot
 	var wg sync.WaitGroup
-	wg.Add(5)
+	wg.Add(7)
 
 	go func() {
 		defer wg.Done()
@@ -64,6 +66,23 @@ func Build(ctx context.Context, f Fetchers, now func() time.Time) model.Snapshot
 			snap.Inbound = f.Inbound(ctx)
 		} else {
 			snap.Inbound = model.TrainLeg{Err: "no inbound fetcher"}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if f.OutboundSubway != nil {
+			snap.OutboundSubway = f.OutboundSubway(ctx)
+		} else {
+			snap.OutboundSubway = model.SubwayCountdown{Err: "no outbound subway fetcher"}
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if f.InboundSubway != nil {
+			snap.InboundSubway = f.InboundSubway(ctx)
+		} else {
+			snap.InboundSubway = model.SubwayCountdown{Err: "no inbound subway fetcher"}
 		}
 	}()
 

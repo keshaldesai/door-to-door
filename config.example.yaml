@@ -27,6 +27,16 @@ subway:
   # Optional: only show alerts touching these subway stops (plus line-wide
   # alerts). Leave empty to see every alert for `routeId`.
   stopIds: []
+  # Optional: per-direction next-arrival countdown. stopId is the GTFS stop_id
+  # at the platform you board on (NYCT encodes platform via trailing N/S);
+  # directionId is the trip's GTFS direction_id (0 or 1). Leave stopId empty
+  # to hide that direction's countdown.
+  outbound:
+    stopId: ""
+    directionId: 0
+  inbound:
+    stopId: ""
+    directionId: 0
 
 feeds:
   # Keyless MTA feeds. VERIFY against current MTA developer docs; URLs have
@@ -34,6 +44,10 @@ feeds:
   mnrStaticGtfs: "http://web.mta.info/developers/data/mnr/google_transit.zip"
   mnrRealtime: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/mnr%2Fgtfs-mnr"
   subwayAlerts: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
+  # Route-group-specific GTFS-realtime trip-updates feed for the subway
+  # countdown. Pick the URL matching your subway.routeId from current MTA
+  # developer docs. Empty disables the countdown.
+  subwayRealtime: ""
 
 weather:
   # NWS requires a descriptive User-Agent with contact info.

@@ -60,6 +60,7 @@ func main() {
 	subwayClient := &subway.Client{HTTP: httpClient, URL: cfg.Feeds.SubwayAlerts, RouteID: cfg.Subway.RouteID, StopIDs: cfg.Subway.StopIDs}
 	driveClient := &drive.Client{HTTP: httpClient, Base: "https://maps.googleapis.com/maps/api/distancematrix/json", Key: cfg.GoogleMapsKey}
 	mnrClient := &mnr.Client{HTTP: httpClient, URL: cfg.Feeds.MNRRealtime}
+	tripsClient := &subway.TripsClient{HTTP: httpClient, URL: cfg.Feeds.SubwayRealtime, RouteID: cfg.Subway.RouteID}
 
 	build := func(ctx context.Context) model.Snapshot {
 		now := time.Now().In(loc)
@@ -101,6 +102,18 @@ func main() {
 			Inbound: func(ctx context.Context) model.TrainLeg {
 				return trainLeg(work.ID, home.ID, work.Label, home.Label,
 					cfg.LeaveBeforeTrainMinutes.Inbound, cfg.ExpectedTracks["work"])
+			},
+			OutboundSubway: func(ctx context.Context) model.SubwayCountdown {
+				if cfg.Feeds.SubwayRealtime == "" || cfg.Subway.Outbound.StopID == "" {
+					return model.SubwayCountdown{}
+				}
+				return tripsClient.Fetch(ctx, cfg.Subway.Outbound.StopID, cfg.Subway.Outbound.DirectionID, cfg.TrainsToShow, now)
+			},
+			InboundSubway: func(ctx context.Context) model.SubwayCountdown {
+				if cfg.Feeds.SubwayRealtime == "" || cfg.Subway.Inbound.StopID == "" {
+					return model.SubwayCountdown{}
+				}
+				return tripsClient.Fetch(ctx, cfg.Subway.Inbound.StopID, cfg.Subway.Inbound.DirectionID, cfg.TrainsToShow, now)
 			},
 		}
 		return dashboard.Build(ctx, fetchers, func() time.Time { return now })

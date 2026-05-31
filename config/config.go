@@ -15,6 +15,15 @@ type StopConfig struct {
 	Label string `yaml:"label"`
 }
 
+// SubwayDirection is the per-direction stop+direction the rider boards.
+// StopID is the GTFS stop_id (NYCT encodes platform via trailing N/S);
+// DirectionID is the trip's GTFS direction_id used as a secondary
+// filter when the feed populates it.
+type SubwayDirection struct {
+	StopID      string `yaml:"stopId"`
+	DirectionID uint32 `yaml:"directionId"`
+}
+
 type Config struct {
 	Home struct {
 		Lat float64 `yaml:"lat"`
@@ -32,13 +41,16 @@ type Config struct {
 		Work StopConfig `yaml:"work"`
 	} `yaml:"stops"`
 	Subway struct {
-		RouteID string   `yaml:"routeId"`
-		StopIDs []string `yaml:"stopIds"`
+		RouteID  string          `yaml:"routeId"`
+		StopIDs  []string        `yaml:"stopIds"`
+		Outbound SubwayDirection `yaml:"outbound"`
+		Inbound  SubwayDirection `yaml:"inbound"`
 	} `yaml:"subway"`
 	Feeds struct {
-		MNRStaticGTFS string `yaml:"mnrStaticGtfs"`
-		MNRRealtime   string `yaml:"mnrRealtime"`
-		SubwayAlerts  string `yaml:"subwayAlerts"`
+		MNRStaticGTFS  string `yaml:"mnrStaticGtfs"`
+		MNRRealtime    string `yaml:"mnrRealtime"`
+		SubwayAlerts   string `yaml:"subwayAlerts"`
+		SubwayRealtime string `yaml:"subwayRealtime"`
 	} `yaml:"feeds"`
 	Weather struct {
 		UserAgent string `yaml:"userAgent"`

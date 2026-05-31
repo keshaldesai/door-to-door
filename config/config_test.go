@@ -156,3 +156,85 @@ func TestLoadRejectsMissingRequired(t *testing.T) {
 		t.Fatal("expected error for missing required fields")
 	}
 }
+
+func TestLoadParsesSubwayRealtimeAndDirections(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+	yaml := `
+home:
+  lat: 0
+  lon: 0
+stops:
+  home:
+    id: "100"
+  work:
+    id: "1"
+subway:
+  routeId: "6"
+  outbound:
+    stopId: "635N"
+    directionId: 1
+  inbound:
+    stopId: "631S"
+    directionId: 0
+feeds:
+  mnrStaticGtfs: "http://example.com/mnr.zip"
+  mnrRealtime: "http://example.com/mnr-rt"
+  subwayAlerts: "http://example.com/subway-alerts"
+  subwayRealtime: "http://example.com/subway-rt"
+weather:
+  userAgent: "commute-helper (me@example.com)"
+`
+	if err := os.WriteFile(path, []byte(yaml), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.Feeds.SubwayRealtime != "http://example.com/subway-rt" {
+		t.Fatalf("subwayRealtime = %q", cfg.Feeds.SubwayRealtime)
+	}
+	if cfg.Subway.Outbound.StopID != "635N" || cfg.Subway.Outbound.DirectionID != 1 {
+		t.Fatalf("outbound = %+v", cfg.Subway.Outbound)
+	}
+	if cfg.Subway.Inbound.StopID != "631S" || cfg.Subway.Inbound.DirectionID != 0 {
+		t.Fatalf("inbound = %+v", cfg.Subway.Inbound)
+	}
+}
+
+func TestLoadAllowsSubwayDirectionsOmitted(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+	yaml := `
+home:
+  lat: 0
+  lon: 0
+stops:
+  home:
+    id: "100"
+  work:
+    id: "1"
+subway:
+  routeId: "6"
+feeds:
+  mnrStaticGtfs: "http://example.com/mnr.zip"
+  mnrRealtime: "http://example.com/mnr-rt"
+  subwayAlerts: "http://example.com/subway-alerts"
+weather:
+  userAgent: "commute-helper (me@example.com)"
+`
+	if err := os.WriteFile(path, []byte(yaml), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.Subway.Outbound.StopID != "" || cfg.Subway.Inbound.StopID != "" {
+		t.Fatalf("expected empty direction blocks, got out=%+v in=%+v", cfg.Subway.Outbound, cfg.Subway.Inbound)
+	}
+	if cfg.Feeds.SubwayRealtime != "" {
+		t.Fatalf("expected empty subwayRealtime, got %q", cfg.Feeds.SubwayRealtime)
+	}
+}
