@@ -63,6 +63,11 @@ nudges:
 
 timezone: "America/New_York"
 
+# Local time-of-day cutoff for swapping the dashboard panel order. Before this
+# time, the Outbound (home -> work) panel is on top; at or after, Inbound is
+# on top. Empty string disables the swap.
+eveningSwitchAt: "12:00"
+
 server:
   addr: ":8080"
 

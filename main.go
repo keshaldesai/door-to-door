@@ -116,7 +116,9 @@ func main() {
 				return tripsClient.Fetch(ctx, cfg.Subway.Inbound.StopID, cfg.Subway.Inbound.DirectionID, cfg.TrainsToShow, now)
 			},
 		}
-		return dashboard.Build(ctx, fetchers, func() time.Time { return now })
+		snap := dashboard.Build(ctx, fetchers, func() time.Time { return now })
+		snap.PrimaryDirection = primaryDirection(now, cfg.EveningSwitchAt)
+		return snap
 	}
 
 	srv := server.New(build)
@@ -147,6 +149,26 @@ func main() {
 	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("server: %v", err)
 	}
+}
+
+// primaryDirection returns "outbound" when now is before the HH:MM cutoff
+// (in now's location) and "inbound" at or after. Empty cutoff means
+// always "outbound". An unparseable cutoff also yields "outbound" - it
+// will have been rejected at config load, so this is defensive.
+func primaryDirection(now time.Time, cutoff string) string {
+	if cutoff == "" {
+		return "outbound"
+	}
+	t, err := time.Parse("15:04", cutoff)
+	if err != nil {
+		return "outbound"
+	}
+	y, m, d := now.Date()
+	switchAt := time.Date(y, m, d, t.Hour(), t.Minute(), 0, 0, now.Location())
+	if now.Before(switchAt) {
+		return "outbound"
+	}
+	return "inbound"
 }
 
 // refreshScheduleDaily re-downloads and reparses the static GTFS once a day,

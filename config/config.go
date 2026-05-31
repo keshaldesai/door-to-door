@@ -5,6 +5,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -66,6 +67,10 @@ type Config struct {
 	Server   struct {
 		Addr string `yaml:"addr"`
 	} `yaml:"server"`
+	// EveningSwitchAt is the local-time cutoff (HH:MM) for swapping the
+	// dashboard panel order. Before this time, Outbound is on top; at or
+	// after, Inbound is on top. Empty disables the swap.
+	EveningSwitchAt string `yaml:"eveningSwitchAt"`
 	// LeaveBeforeTrainMinutes is how many minutes before each MNR departure to
 	// leave for the train, per direction. Zero hides the leave-by hint.
 	LeaveBeforeTrainMinutes struct {
@@ -107,6 +112,11 @@ func Load(path string) (*Config, error) {
 	}
 	if cfg.Server.Addr == "" {
 		cfg.Server.Addr = ":8080"
+	}
+	if cfg.EveningSwitchAt != "" {
+		if _, err := time.Parse("15:04", cfg.EveningSwitchAt); err != nil {
+			return nil, fmt.Errorf("eveningSwitchAt %q: %w", cfg.EveningSwitchAt, err)
+		}
 	}
 
 	var missing []string

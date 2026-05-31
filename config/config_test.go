@@ -238,3 +238,66 @@ weather:
 		t.Fatalf("expected empty subwayRealtime, got %q", cfg.Feeds.SubwayRealtime)
 	}
 }
+
+func TestLoadAllowsEmptyEveningSwitchAt(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+	yaml := `
+home:
+  lat: 0
+  lon: 0
+stops:
+  home:
+    id: "100"
+  work:
+    id: "1"
+subway:
+  routeId: "X"
+feeds:
+  mnrStaticGtfs: "http://example.com/mnr.zip"
+  mnrRealtime: "http://example.com/mnr-rt"
+  subwayAlerts: "http://example.com/subway-alerts"
+weather:
+  userAgent: "test"
+`
+	if err := os.WriteFile(path, []byte(yaml), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.EveningSwitchAt != "" {
+		t.Fatalf("eveningSwitchAt = %q, want empty", cfg.EveningSwitchAt)
+	}
+}
+
+func TestLoadRejectsMalformedEveningSwitchAt(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+	yaml := `
+home:
+  lat: 0
+  lon: 0
+stops:
+  home:
+    id: "100"
+  work:
+    id: "1"
+subway:
+  routeId: "X"
+feeds:
+  mnrStaticGtfs: "http://example.com/mnr.zip"
+  mnrRealtime: "http://example.com/mnr-rt"
+  subwayAlerts: "http://example.com/subway-alerts"
+weather:
+  userAgent: "test"
+eveningSwitchAt: "noon"
+`
+	if err := os.WriteFile(path, []byte(yaml), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Load(path); err == nil {
+		t.Fatal("expected error for malformed eveningSwitchAt")
+	}
+}

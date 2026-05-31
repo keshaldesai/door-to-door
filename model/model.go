@@ -79,12 +79,13 @@ type Weather struct {
 
 // Snapshot is the full dashboard state at a moment in time.
 type Snapshot struct {
-	GeneratedAt    time.Time       `json:"generatedAt"`
-	Weather        Weather         `json:"weather"`
-	Drive          DriveLeg        `json:"drive"`
-	Subway         SubwayLeg       `json:"subway"`
-	Outbound       TrainLeg        `json:"outbound"` // home -> work
-	Inbound        TrainLeg        `json:"inbound"`  // work -> home
-	OutboundSubway SubwayCountdown `json:"outboundSubway"`
-	InboundSubway  SubwayCountdown `json:"inboundSubway"`
+	GeneratedAt      time.Time       `json:"generatedAt"`
+	Weather          Weather         `json:"weather"`
+	Drive            DriveLeg        `json:"drive"`
+	Subway           SubwayLeg       `json:"subway"`
+	Outbound         TrainLeg        `json:"outbound"` // home -> work
+	Inbound          TrainLeg        `json:"inbound"`  // work -> home
+	OutboundSubway   SubwayCountdown `json:"outboundSubway"`
+	InboundSubway    SubwayCountdown `json:"inboundSubway"`
+	PrimaryDirection string          `json:"primaryDirection"` // "outbound" | "inbound"
 }

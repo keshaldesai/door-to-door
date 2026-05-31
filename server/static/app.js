@@ -15,6 +15,16 @@ function fmtUntil(ms) {
   return `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
+function applyPrimaryDirection(primary) {
+  if (primary !== "outbound" && primary !== "inbound") return;
+  const main = document.querySelector("main");
+  const journeys = main.querySelectorAll("section.journey");
+  if (journeys.length !== 2) return;
+  const first = journeys[0].dataset.direction;
+  if (first === primary) return;
+  main.insertBefore(journeys[1], journeys[0]);
+}
+
 function statusClass(status) {
   if (!status || status === "On time" || status === "Good Service") return "ok";
   if (status.startsWith("Delayed") || status === "Delays") return "bad";
@@ -117,6 +127,7 @@ async function refresh() {
   try {
     const res = await fetch("/api/status");
     const snap = await res.json();
+    applyPrimaryDirection(snap.primaryDirection);
     renderWeather(snap.weather);
     renderDrive("out-drive", snap.drive);
     renderTrainLeg("out-train", snap.outbound);
