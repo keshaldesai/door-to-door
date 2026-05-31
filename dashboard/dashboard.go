@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/keshaldee/commute/model"
+	"github.com/keshaldesai/door-to-door/model"
 )
 
 // Fetchers holds one function per data source. A nil fetcher yields a leg with

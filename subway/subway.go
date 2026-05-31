@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/MobilityData/gtfs-realtime-bindings/golang/gtfs"
-	"github.com/keshaldee/commute/model"
+	"github.com/keshaldesai/door-to-door/model"
 	"google.golang.org/protobuf/proto"
 )
 

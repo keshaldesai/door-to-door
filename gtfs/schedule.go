@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/keshaldee/commute/model"
+	"github.com/keshaldesai/door-to-door/model"
 )
 
 // NextDepartures returns up to n scheduled departures from origin to dest whose

@@ -13,17 +13,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/keshaldee/commute/config"
-	"github.com/keshaldee/commute/dashboard"
-	"github.com/keshaldee/commute/drive"
-	"github.com/keshaldee/commute/gtfs"
-	"github.com/keshaldee/commute/mnr"
-	"github.com/keshaldee/commute/model"
-	"github.com/keshaldee/commute/notify"
-	"github.com/keshaldee/commute/scheduler"
-	"github.com/keshaldee/commute/server"
-	"github.com/keshaldee/commute/subway"
-	"github.com/keshaldee/commute/weather"
+	"github.com/keshaldesai/door-to-door/config"
+	"github.com/keshaldesai/door-to-door/dashboard"
+	"github.com/keshaldesai/door-to-door/drive"
+	"github.com/keshaldesai/door-to-door/gtfs"
+	"github.com/keshaldesai/door-to-door/mnr"
+	"github.com/keshaldesai/door-to-door/model"
+	"github.com/keshaldesai/door-to-door/notify"
+	"github.com/keshaldesai/door-to-door/scheduler"
+	"github.com/keshaldesai/door-to-door/server"
+	"github.com/keshaldesai/door-to-door/subway"
+	"github.com/keshaldesai/door-to-door/weather"
 )
 
 func main() {

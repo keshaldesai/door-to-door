@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/keshaldee/commute/model"
+	"github.com/keshaldesai/door-to-door/model"
 )
 
 //go:embed all:static

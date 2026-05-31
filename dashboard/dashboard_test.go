@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/keshaldee/commute/model"
+	"github.com/keshaldesai/door-to-door/model"
 )
 
 func TestBuildAssemblesAllLegsConcurrently(t *testing.T) {

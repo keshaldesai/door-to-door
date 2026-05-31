@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keshaldee/commute/model"
+	"github.com/keshaldesai/door-to-door/model"
 )
 
 // Post sends content to a Discord webhook URL.

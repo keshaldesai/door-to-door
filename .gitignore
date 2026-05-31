@@ -4,3 +4,4 @@ config.yaml
 /commute-helper
 .direnv/
 cache/
+.claude/

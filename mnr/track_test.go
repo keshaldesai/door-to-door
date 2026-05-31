@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/MobilityData/gtfs-realtime-bindings/golang/gtfs"
-	"github.com/keshaldee/commute/model"
-	"github.com/keshaldee/commute/mtarr"
+	"github.com/keshaldesai/door-to-door/model"
+	"github.com/keshaldesai/door-to-door/mtarr"
 	"google.golang.org/protobuf/proto"
 )
 

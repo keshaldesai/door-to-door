@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/keshaldee/commute/model"
+	"github.com/keshaldesai/door-to-door/model"
 )
 
 // Due reports whether a nudge should fire at now. It returns "morning" or

@@ -1,4 +1,4 @@
-# Commute Helper
+# door-to-door
 
 A self-hosted dashboard for a fixed Metro-North + NYC subway commute: drive
 from home to your station, train to a downtown terminal, subway to the
